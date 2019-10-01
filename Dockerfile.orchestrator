@@ -47,12 +47,14 @@ FROM alpine:3.7
 RUN addgroup -g 777 orchestrator && adduser -u 777 -g 777 -S orchestrator
 
 ENV DOCKERIZE_VERSION v0.6.1
+ENV TZ Asia/Shanghai
 RUN set -ex \
     && apk add --update --no-cache \
         curl \
         wget \
         tar \
         openssl \
+        tzdata \
     && mkdir /etc/orchestrator /var/lib/orchestrator \
     && chown -R 777:777 /etc/orchestrator /var/lib/orchestrator \
     && wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz -O- | \

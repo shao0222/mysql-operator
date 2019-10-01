@@ -39,6 +39,7 @@ RUN wget -nv https://github.com/ncw/rclone/releases/download/v1.48.0/rclone-v1.4
 ###############################################################################
 FROM debian:stretch-slim as sidecar
 
+ENV TZ Asia/Shanghai
 RUN groupadd -g 999 mysql
 RUN useradd -u 999 -r -g 999 -s /sbin/nologin \
     -c "Default Application User" mysql
