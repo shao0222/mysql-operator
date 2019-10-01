@@ -18,9 +18,10 @@ package mysqlcluster
 
 import (
 	"fmt"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"strconv"
 	"strings"
+
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	"github.com/imdario/mergo"
 	apps "k8s.io/api/apps/v1"
@@ -210,6 +211,10 @@ func (s *sfsSyncer) getEnvFor(name string) []core.EnvVar {
 	env = append(env, core.EnvVar{
 		Name:  "MY_FQDN",
 		Value: "$(MY_POD_NAME).$(MY_SERVICE_NAME).$(MY_NAMESPACE)",
+	})
+	env = append(env, core.EnvVar{
+		Name:  "TZ",
+		Value: "Asia/Shanghai",
 	})
 
 	if len(s.cluster.Spec.InitBucketURL) > 0 && name == containerCloneAndInitName {
