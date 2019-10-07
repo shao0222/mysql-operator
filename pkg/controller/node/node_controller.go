@@ -296,9 +296,9 @@ func (r *ReconcileMysqlNode) initializeMySQL(ctx context.Context, sql SQLInterfa
 		masterHost = cluster.GetMasterHost()
 	}
 	if masterHost != sql.Host() {
-		log.Info("run CHANGE MASTER TO on pod", "pod", sql.Host(), "master", cluster.GetMasterHost())
+		log.Info("run CHANGE MASTER TO on pod", "pod", sql.Host(), "master", masterHost)
 
-		if err := sql.ChangeMasterTo(ctx, cluster.GetMasterHost(), c.ReplicationUser, c.ReplicationPassword); err != nil {
+		if err := sql.ChangeMasterTo(ctx, masterHost, c.ReplicationUser, c.ReplicationPassword); err != nil {
 			return err
 		}
 	}
