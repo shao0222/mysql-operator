@@ -22,38 +22,6 @@ pipeline:
     commands:
       - make dependencies
 
-  lint:
-    group: lint
-    image: quay.io/presslabs/bfc:0.1
-    commands:
-      - make lint
-
-  lint-chart:
-    group: lint
-    image: quay.io/presslabs/kluster-toolbox
-    pull: true
-    commands:
-      - helm lint hack/charts/mysql-operator
-      - helm dep build hack/charts/mysql-operator
-
-  test:
-    group: test
-    image: quay.io/presslabs/bfc
-    commands:
-      - make test
-
-  verify-generate:
-    image: quay.io/presslabs/bfc:0.1
-    commands:
-      - make -s fmt generate manifests
-      - git diff --exit-code
-
-  build-chart:
-    group: build
-    image: quay.io/presslabs/bfc
-    commands:
-      - make chart
-
   publish-operator:
     group: publish
     image: plugins/docker
