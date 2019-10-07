@@ -18,8 +18,9 @@ package mysqlcluster
 
 import (
 	"fmt"
-	"github.com/presslabs/mysql-operator/pkg/options"
 	"strings"
+
+	"github.com/presslabs/mysql-operator/pkg/options"
 
 	"github.com/blang/semver"
 	core "k8s.io/api/core/v1"
@@ -151,6 +152,9 @@ func (c *MysqlCluster) GetPodHostname(p int) string {
 
 // GetClusterAlias returns the cluster alias that as it is in orchestrator
 func (c *MysqlCluster) GetClusterAlias() string {
+	if len(c.Spec.SlaveOf) > 0 {
+		return c.Spec.SlaveOf
+	}
 	return fmt.Sprintf("%s.%s", c.Name, c.Namespace)
 }
 
