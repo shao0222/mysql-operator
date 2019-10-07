@@ -75,12 +75,25 @@ type Config struct {
 
 	// Offset for assigning MySQL Server ID
 	MyServerIDOffset int
+
+	SlaveOf string
 }
 
 // FQDNForServer returns the pod hostname for given MySQL server id
 func (cfg *Config) FQDNForServer(id int) string {
 	base := mysqlcluster.GetNameForResource(mysqlcluster.StatefulSet, cfg.ClusterName)
 	return fmt.Sprintf("%s-%d.%s.%s", base, id-cfg.MyServerIDOffset, cfg.ServiceName, cfg.Namespace)
+}
+
+// FQDNForSlaveOfServer returns the pod hostname for given slaveOf
+func (cfg *Config) FQDNForSlaveOfServer() (string, error) {
+	slaveOf := strings.Split(cfg.SlaveOf, ".")
+	if len(slaveOf) != 2 {
+		return "", fmt.Errorf("failed to get FQDN for %s, err: slaveOf is invalid", slaveOf)
+	}
+
+	base := mysqlcluster.GetNameForResource(mysqlcluster.StatefulSet, slaveOf[0])
+	return fmt.Sprintf("%s-0.%s.%s", base, cfg.ServiceName, slaveOf[1]), nil
 }
 
 // ClusterFQDN returns the cluster FQ Name of the cluster from which the node belongs
@@ -166,6 +179,8 @@ func NewConfig() *Config {
 		ExistsMySQLData: eData,
 
 		MyServerIDOffset: offset,
+
+		SlaveOf: getEnvValue("MY_SLAVE_OF"),
 	}
 
 	return cfg

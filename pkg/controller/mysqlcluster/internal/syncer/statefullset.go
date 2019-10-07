@@ -18,9 +18,10 @@ package mysqlcluster
 
 import (
 	"fmt"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"strconv"
 	"strings"
+
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	"github.com/imdario/mergo"
 	apps "k8s.io/api/apps/v1"
@@ -223,6 +224,13 @@ func (s *sfsSyncer) getEnvFor(name string) []core.EnvVar {
 		env = append(env, core.EnvVar{
 			Name:  "MY_SERVER_ID_OFFSET",
 			Value: strconv.FormatInt(int64(*s.cluster.Spec.ServerIDOffset), 10),
+		})
+	}
+
+	if len(s.cluster.Spec.SlaveOf) > 0 && name == containerCloneAndInitName {
+		env = append(env, core.EnvVar{
+			Name:  "MY_SLAVE_OF",
+			Value: s.cluster.Spec.SlaveOf,
 		})
 	}
 

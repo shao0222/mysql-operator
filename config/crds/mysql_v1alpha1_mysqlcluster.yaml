@@ -194,6 +194,9 @@ spec:
                 node will be the index of the statefulset, plus offset
               format: int64
               type: integer
+            slaveOf:
+              description: Set a cluster as a slave of other cluster.
+              type: string
             volumeSpec:
               description: PVC extra specifiaction
               properties:

@@ -123,6 +123,10 @@ type MysqlClusterSpec struct {
 	// Set a custom offset for Server IDs.  ServerID for each node will be the index of the statefulset, plus offset
 	// +optional
 	ServerIDOffset *int `json:"serverIDOffset,omitempty"`
+
+	//Set a cluster as a slave of other cluster.
+	// +optional
+	SlaveOf string `json:"slaveOf,omitempty"`
 }
 
 // MysqlConf defines type for extra cluster configs. It's a simple map between

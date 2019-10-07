@@ -31,6 +31,7 @@ import (
 
 	api "github.com/presslabs/mysql-operator/pkg/apis/mysql/v1alpha1"
 	"github.com/presslabs/mysql-operator/pkg/internal/mysqlcluster"
+	"github.com/presslabs/mysql-operator/pkg/orchestrator"
 	orc "github.com/presslabs/mysql-operator/pkg/orchestrator"
 )
 
@@ -341,6 +342,11 @@ func (ou *orcUpdater) discoverNodesInOrc(keys []orc.InstanceKey) {
 	for _, key := range keys {
 		if err := ou.orcClient.Discover(key.Hostname, key.Port); err != nil {
 			log.Error(err, "failed to discover host with orchestrator", "key", key)
+		}
+		if len(ou.cluster.Spec.SlaveOf) > 0 {
+			if err := ou.orcClient.RegisterCandidate(key.Hostname, key.Port, orchestrator.MustNotPromoteRule); err != nil {
+				log.Error(err, "failed to register candidate host with orchestrator", "key", key.Hostname)
+			}
 		}
 	}
 }

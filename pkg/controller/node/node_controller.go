@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -283,7 +284,18 @@ func (r *ReconcileMysqlNode) initializeMySQL(ctx context.Context, sql SQLInterfa
 	}
 
 	// is this a slave node?
-	if cluster.GetMasterHost() != sql.Host() {
+	var masterHost string
+	if len(cluster.Spec.SlaveOf) > 0 {
+		slaveOfCluster, err := r.getNodeSlaveOfCluster(ctx, cluster)
+		if err != nil {
+			log.Info("cluster is not found", "pod", sql.Host(), "slaveOf", cluster.Spec.SlaveOf)
+			return err
+		}
+		masterHost = slaveOfCluster.GetMasterHost()
+	} else {
+		masterHost = cluster.GetMasterHost()
+	}
+	if masterHost != sql.Host() {
 		log.Info("run CHANGE MASTER TO on pod", "pod", sql.Host(), "master", cluster.GetMasterHost())
 
 		if err := sql.ChangeMasterTo(ctx, cluster.GetMasterHost(), c.ReplicationUser, c.ReplicationPassword); err != nil {
@@ -314,6 +326,21 @@ func (r *ReconcileMysqlNode) getNodeCluster(ctx context.Context, pod *corev1.Pod
 	cluster := mysqlcluster.New(&api.MysqlCluster{})
 	err := r.Get(ctx, clusterKey, cluster.Unwrap())
 	return cluster, err
+}
+
+// getNodeSlaveOfCluster returns the node related MySQL cluster
+func (r *ReconcileMysqlNode) getNodeSlaveOfCluster(ctx context.Context, cluster *mysqlcluster.MysqlCluster) (*mysqlcluster.MysqlCluster, error) {
+	slaveOf := strings.Split(cluster.Spec.SlaveOf, ".")
+	if len(slaveOf) != 2 {
+		return nil, fmt.Errorf("slaveOf is invalid: %s", cluster.Spec.SlaveOf)
+	}
+	clusterKey := types.NamespacedName{
+		Name:      slaveOf[0],
+		Namespace: slaveOf[1],
+	}
+	slaveOfCluster := mysqlcluster.New(&api.MysqlCluster{})
+	err := r.Get(ctx, clusterKey, slaveOfCluster.Unwrap())
+	return slaveOfCluster, err
 }
 
 // getMySQLConnectionString returns the DSN that contains credentials to connect to given pod from a MySQL cluster

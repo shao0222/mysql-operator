@@ -32,6 +32,7 @@ import (
 
 	"github.com/presslabs/mysql-operator/pkg/internal/mysqlcluster"
 	"github.com/presslabs/mysql-operator/pkg/options"
+	"github.com/presslabs/mysql-operator/pkg/orchestrator"
 	orc "github.com/presslabs/mysql-operator/pkg/orchestrator"
 	"github.com/presslabs/mysql-operator/pkg/util/constants"
 )
@@ -74,6 +75,11 @@ func (u *upgrader) Run(ctx context.Context) error {
 	for _, ns := range u.cluster.Status.Nodes {
 		if err = u.orcClient.Discover(ns.Name, constants.MysqlPort); err != nil {
 			log.Error(err, "failed to discover old hosts in new orchestrator - continue", "host", ns.Name)
+		}
+		if len(u.cluster.Spec.SlaveOf) > 0 {
+			if err = u.orcClient.RegisterCandidate(ns.Name, constants.MysqlPort, orchestrator.MustNotPromoteRule); err != nil {
+				log.Error(err, "failed to register candidate old hosts in new orchestrator - continue", "host", ns.Name)
+			}
 		}
 	}
 

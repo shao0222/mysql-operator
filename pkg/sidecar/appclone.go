@@ -36,10 +36,20 @@ func RunCloneCommand(cfg *Config) error {
 		return fmt.Errorf("removing lost+found: %s", err)
 	}
 
-	if cfg.ServerID() > 100 {
+	if cfg.ServerID() > cfg.MyServerIDOffset {
 		// cloning from prior node
 		sourceHost := cfg.FQDNForServer(cfg.ServerID() - 1)
 		err := cloneFromSource(cfg, sourceHost)
+		if err != nil {
+			return fmt.Errorf("failed to clone from %s, err: %s", sourceHost, err)
+		}
+	} else if cfg.SlaveOf != "" {
+		// cloning from other cluster
+		sourceHost, err := cfg.FQDNForSlaveOfServer()
+		if err != nil {
+			return fmt.Errorf("failed to clone from %s, err: %s", cfg.SlaveOf, err)
+		}
+		err = cloneFromSource(cfg, sourceHost)
 		if err != nil {
 			return fmt.Errorf("failed to clone from %s, err: %s", sourceHost, err)
 		}

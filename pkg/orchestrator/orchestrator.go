@@ -23,6 +23,7 @@ import (
 // Interface is the orchestrator client interface
 type Interface interface {
 	Discover(host string, port int) error
+	RegisterCandidate(host string, port int, promotionRule CandidatePromotionRule) error
 	Forget(host string, port int) error
 
 	Master(clusterHint string) (*Instance, error)
@@ -53,6 +54,14 @@ func NewFromURI(uri string) Interface {
 
 func (o *orchestrator) Discover(host string, port int) error {
 	if err := o.makeGetAPIRequest(fmt.Sprintf("discover/%s/%d", host, port), nil); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *orchestrator) RegisterCandidate(host string, port int, promotionRule CandidatePromotionRule) error {
+	if err := o.makeGetAPIRequest(fmt.Sprintf("register-candidate/%s/%d/%s", host, port, promotionRule), nil); err != nil {
 		return err
 	}
 
