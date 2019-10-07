@@ -214,6 +214,26 @@ func (o *OrcFakeClient) Discover(host string, port int) error {
 	return nil
 }
 
+// RegisterCandidate indicate the promotion rule for a given instance
+func (o *OrcFakeClient) RegisterCandidate(host string, port int, promotionRule CandidatePromotionRule) error {
+	o.lock.Lock()
+	defer o.lock.Unlock()
+
+	if !o.reachable {
+		return NewErrorMsg("can't connect to orc", "/")
+	}
+
+	cluster := o.getHostClusterAlias(host)
+	instances, ok := o.Clusters[cluster]
+	if !ok {
+		return NewErrorMsg("Unable to determine cluster name", "/register-candidate")
+	}
+	for _, inst := range instances {
+		inst.PromotionRule = MustNotPromoteRule
+	}
+	return nil
+}
+
 // Forget removes a host from orchestrator
 func (o *OrcFakeClient) Forget(host string, port int) error {
 	if !o.reachable {
